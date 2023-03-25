@@ -1,65 +1,72 @@
-import './App.css';
-import { useEffect, useState, useRef } from 'react'
-import Gallery from './components/Gallery'
-import SearchBar from './components/SearchBar'
-import { DataContext } from './context/DataContext'
-import { SearchContext } from './context/SearchContext';
-
+import { useEffect, useState } from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Gallery from "./components/Gallery";
+import SearchBar from "./components/SearchBar";
+import AlbumView from "./components/AlbumView";
+import ArtistView from "./components/ArtistView";
+import { Fragment } from "react";
+import "./App.css";
+// import { DataContext } from './context/DataContext'
+// import { SearchContext } from './context/SearchContext';
 
 function App() {
-  let [search, setSearchTerm] = useState('')
-  let [data, setData] = useState([])
-  let [message, setMessage] = useState('Search for Music!')
-  let searchInput = useRef('')
+  let [search, setSearchTerm] = useState("");
+  let [data, setData] = useState([]);
+  let [message, setMessage] = useState("Search for Music!");
+  // let searchInput = useRef('')
 
- useEffect(() => {
+  useEffect(() => {
     if (search) {
-        const fetchData = async () => {
-            document.title = `${search} Music`
-            const response = await fetch(`https://itunes.apple.com/search?term=${search}`)
-            const resData = await response.json()
-            if(resData.results.length > 0) {
-                return setData(resData.results)
-            } else {
-                return setMessage('Not Found.')
-            }
+      const fetchData = async () => {
+        document.title = `${search} Music`;
+        const response = await fetch(
+          `https://itunes.apple.com/search?term=${search}`
+        );
+        const resData = await response.json();
+        if (resData.results.length > 0) {
+          return setData(resData.results);
+        } else {
+          return setMessage("Not Found.");
         }
-        fetchData()
+      };
+      fetchData();
     }
-}, [search]
-)
+  }, [search]);
 
-
-
- 
-const handleSearch = (e, term) => {
-  e.preventDefault()
-  const fetchData = async () => {
-      document.title = `${term} Music`
-      const response = await fetch(`https://itunes.apple.com/search?term=${term}`)
-      const resData = await response.json()
+  const handleSearch = (e, term) => {
+    e.preventDefault();
+    const fetchData = async () => {
+      document.title = `${term} Music`;
+      const response = await fetch(
+        `https://itunes.apple.com/search?term=${term}`
+      );
+      const resData = await response.json();
       if (resData.results.length > 0) {
-          return setData(resData.results)
+        return setData(resData.results);
       } else {
-          return setMessage('Not Found.')
+        return setMessage("Not Found.");
       }
-  }
-  fetchData()
-}
-
+    };
+    fetchData();
+  };
   return (
-    <div className="App">
-      <SearchContext.Provider value={{
-        term: searchInput,
-        handleSearch: handleSearch,
-      }}>
-        <SearchBar />
-      </SearchContext.Provider>
-           {/* <SearchBar handleSearch={handleSearch} /> */}
+    <div>
       {message}
-      <DataContext.Provider value={{ data}}>
-      <Gallery data={data} />
-      </DataContext.Provider>
+      <Router>
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <Fragment>
+                <SearchBar handleSearch={handleSearch} />
+                <Gallery data={data} />
+              </Fragment>
+            }
+          />
+          <Route path="/album/:id" element={<AlbumView />} />
+          <Route path="/artist/:id" element={<ArtistView />} />
+        </Routes>
+      </Router>
     </div>
   );
 }
